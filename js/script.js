@@ -53,7 +53,7 @@ let plot = (data) => {
 
   const config2 = {
     type: 'bar',
-    data: data,
+    data: dataset2,
     options: {
       scales: {
         y: {
@@ -66,15 +66,9 @@ let plot = (data) => {
   const chart2 = new Chart(ctx2, config2)
 }
 
-(
-    function () {
-        let URL = 'https://api.open-meteo.com/v1/forecast?latitude=-2.14&longitude=-79.97&hourly=temperature_2m,precipitation_probability,rain,visibility&daily=temperature_2m_max,temperature_2m_min,uv_index_max&timezone=auto'
-        fetch(URL)
-        .then(response => response.json())
-        .then(data => {
-            console.log(data)
+let load = (data) => {
 
-          let timezone=data['timezone_abbreviation']
+  let timezone=data['timezone_abbreviation']
           let timezoneHTML=document.getElementById('time-zone')
           timezoneHTML.textContent='GTM'+timezone
 
@@ -91,8 +85,27 @@ let plot = (data) => {
           longitudeHTML.textContent=longitude
 
           plot(data)
+
+}
+
+(
+    function () {
+        let meteo = localStorage.getItem('meteo');
+        if(meteo == null) {
+        let URL = 'https://api.open-meteo.com/v1/forecast?latitude=-2.14&longitude=-79.97&hourly=temperature_2m,precipitation_probability,rain,visibility&daily=temperature_2m_max,temperature_2m_min,uv_index_max&timezone=auto'
+        
+
+        fetch(URL)
+        .then(response => response.json())
+        .then(data => {
+
+         load(data);
+         localStorage.setItem("meteo", JSON.stringify(data))
           
         })
-        .catch(console.error);    
+        .catch(console.error);   
+      } else {
+        load(JSON.parse(meteo))
+      } 
     }
   )();
