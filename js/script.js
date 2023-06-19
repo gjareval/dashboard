@@ -6,11 +6,11 @@ let plot = (data) => {
   const dataset = {
     labels: data.hourly.time, /* ETIQUETA DE DATOS */
     datasets: [{
-        label: 'Weekly temperature', /* ETIQUETA DEL GRÁFICO */
-        data: data.hourly.temperature_2m, /* ARREGLO DE DATOS */
-        fill: false,
-        borderColor: 'rgb(75, 192, 192)',
-        tension: 0.1
+      label: 'Weekly temperature', /* ETIQUETA DEL GRÁFICO */
+      data: data.hourly.temperature_2m, /* ARREGLO DE DATOS */
+      fill: false,
+      borderColor: 'rgb(75, 192, 192)',
+      tension: 0.1
     }]
   };
 
@@ -27,27 +27,27 @@ let plot = (data) => {
   const dataset2 = {
     labels: data.daily.time, /* ETIQUETA DE DATOS */
     datasets: [{
-        label: 'Weekly UV index', /* ETIQUETA DEL GRÁFICO */
-        data: data.daily.uv_index_max, /* ARREGLO DE DATOS */
-        backgroundColor: [
-          'rgba(255, 99, 132, 0.2)',
-          'rgba(255, 159, 64, 0.2)',
-          'rgba(255, 205, 86, 0.2)',
-          'rgba(75, 192, 192, 0.2)',
-          'rgba(54, 162, 235, 0.2)',
-          'rgba(153, 102, 255, 0.2)',
-          'rgba(201, 203, 207, 0.2)'
-        ],
-        borderColor: [
-          'rgb(255, 99, 132)',
-          'rgb(255, 159, 64)',
-          'rgb(255, 205, 86)',
-          'rgb(75, 192, 192)',
-          'rgb(54, 162, 235)',
-          'rgb(153, 102, 255)',
-          'rgb(201, 203, 207)'
-        ],
-        borderWidth: 1
+      label: 'Weekly UV index', /* ETIQUETA DEL GRÁFICO */
+      data: data.daily.uv_index_max, /* ARREGLO DE DATOS */
+      backgroundColor: [
+        'rgba(255, 99, 132, 0.2)',
+        'rgba(255, 159, 64, 0.2)',
+        'rgba(255, 205, 86, 0.2)',
+        'rgba(75, 192, 192, 0.2)',
+        'rgba(54, 162, 235, 0.2)',
+        'rgba(153, 102, 255, 0.2)',
+        'rgba(201, 203, 207, 0.2)'
+      ],
+      borderColor: [
+        'rgb(255, 99, 132)',
+        'rgb(255, 159, 64)',
+        'rgb(255, 205, 86)',
+        'rgb(75, 192, 192)',
+        'rgb(54, 162, 235)',
+        'rgb(153, 102, 255)',
+        'rgb(201, 203, 207)'
+      ],
+      borderWidth: 1
     }]
   };
 
@@ -55,11 +55,11 @@ let plot = (data) => {
     type: 'bar',
     data: dataset2,
     options: {
-      scales: {
-        y: {
-          beginAtZero: true
-        }
+    scales: {
+      y: {
+        beginAtZero: true
       }
+    }
     },
   };
   
@@ -69,43 +69,63 @@ let plot = (data) => {
 let load = (data) => {
 
   let timezone=data['timezone_abbreviation']
-          let timezoneHTML=document.getElementById('time-zone')
-          timezoneHTML.textContent='GTM'+timezone
+  let timezoneHTML=document.getElementById('time-zone')
+  timezoneHTML.textContent='GTM'+timezone
 
-          let ubication=data['timezone']
-          let ubicationHTML=document.getElementById('ubication')
-          ubicationHTML.textContent=ubication
+  let ubication=data['timezone']
+  let ubicationHTML=document.getElementById('ubication')
+  ubicationHTML.textContent=ubication
 
-          let latitude=data['latitude']
-          let latitudeHTML=document.getElementById('latitude')
-          latitudeHTML.textContent=latitude
+  let latitude=data['latitude']
+  let latitudeHTML=document.getElementById('latitude')
+  latitudeHTML.textContent=latitude
 
-          let longitude=data['longitude']
-          let longitudeHTML=document.getElementById('longitude')
-          longitudeHTML.textContent=longitude
+  let longitude=data['longitude']
+  let longitudeHTML=document.getElementById('longitude')
+  longitudeHTML.textContent=longitude
 
-          plot(data)
+  plot(data)
+
+}
+
+let loadInocar = () => { 
+  let URL_proxy='http://localhost:8080/'
+  let URL = URL_proxy+'https://www.inocar.mil.ec/mareas/consultan.php';
+
+fetch(URL)
+  .then(response => response.text())
+    .then(data => {
+      const parser = new DOMParser();
+      const xml = parser.parseFromString(data, "text/html");
+      console.log(xml);
+      let contenedorMareas = xml.getElementsByTagName('div')[0];
+      let contenedorHTML= document.getElementById('table-container');
+      contenedorHTML.innerHTML=contenedorMareas.innerHTML
+    })
+  .catch(console.error);
 
 }
 
 (
-    function () {
-        let meteo = localStorage.getItem('meteo');
-        if(meteo == null) {
-        let URL = 'https://api.open-meteo.com/v1/forecast?latitude=-2.14&longitude=-79.97&hourly=temperature_2m,precipitation_probability,rain,visibility&daily=temperature_2m_max,temperature_2m_min,uv_index_max&timezone=auto'
-        
+  function () {
+    loadInocar();
 
-        fetch(URL)
-        .then(response => response.json())
-        .then(data => {
+    let meteo = localStorage.getItem('meteo');
+    if(meteo == null) {
+    let URL = 'https://api.open-meteo.com/v1/forecast?latitude=-2.14&longitude=-79.97&hourly=temperature_2m,precipitation_probability,rain,visibility&daily=temperature_2m_max,temperature_2m_min,uv_index_max&timezone=auto'
+    
 
-         load(data);
-         localStorage.setItem("meteo", JSON.stringify(data))
-          
-        })
-        .catch(console.error);   
-      } else {
-        load(JSON.parse(meteo))
-      } 
-    }
-  )();
+    fetch(URL)
+    .then(response => response.json())
+    .then(data => {
+      load(data);
+      localStorage.setItem("meteo", JSON.stringify(data))
+
+      
+    })
+    .catch(console.error);   
+  } else {
+    load(JSON.parse(meteo))
+  } 
+  }
+)();
