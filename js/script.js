@@ -64,6 +64,28 @@ let plot = (data) => {
   };
   
   const chart2 = new Chart(ctx2, config2)
+
+  /*GRAFICO PRECIPITACION*/
+
+  const ctx3 = document.getElementById('precipitationChart');
+  
+  const dataset3 = {
+    labels: data.hourly.time, /* ETIQUETA DE DATOS */
+    datasets: [{
+      label: 'Weekly precipitation probability', /* ETIQUETA DEL GRÁFICO */
+      data: data.hourly.precipitation_probability, /* ARREGLO DE DATOS */
+      fill: false,
+      borderColor: 'rgb(75, 192, 192)',
+      tension: 0.1
+    }]
+  };
+
+  const config3 = {
+    type: 'line',
+    data: dataset3,
+  };
+
+  const chart3 = new Chart(ctx3, config3)
 }
 
 let load = (data) => {
@@ -84,6 +106,48 @@ let load = (data) => {
   let longitudeHTML=document.getElementById('longitude')
   longitudeHTML.textContent=longitude
 
+  const tiempoTranscurrido = Date.now()
+  const hoy = new Date(tiempoTranscurrido)
+  let date=hoy.toISOString().substring(0,10)
+  let dateHTML=document.getElementById('date')
+  dateHTML.textContent=date
+
+
+  //obtener indice de la fecha actual entre el array de fechas
+  let fechas=data.daily.time
+
+  function comparar(fecha){
+    if(fecha==date) fechaActual=fechas.indexOf(fecha)
+  }
+
+  fechas.forEach(element => comparar(element))
+
+  let maxTemp=data.daily.temperature_2m_max[fechaActual]
+  let maxTempHTML=document.getElementById('max-temperature')
+  maxTempHTML.textContent=maxTemp+' °C'
+
+  let minTemp=data.daily.temperature_2m_min[fechaActual]
+  let minTempHTML=document.getElementById('min-temperature')
+  minTempHTML.textContent=minTemp+' °C'
+
+  let sunrise=data.daily.sunrise[fechaActual]
+  let sunriseHTML=document.getElementById('sunrise')
+  sunriseHTML.textContent=sunrise.substring(11)+' AM'
+
+  let sunset=data.daily.sunset[fechaActual]
+  let sunsetHTML=document.getElementById('sunset')
+  sunsetHTML.textContent=sunset.substring(11)+ 'PM'
+
+  let windspeed=data.daily.windspeed_10m_max[fechaActual]
+  let windspeedHTML=document.getElementById('windspeed')
+  windspeedHTML.textContent=windspeed+' km/h'
+
+  let winddirection=data.daily.winddirection_10m_dominant[fechaActual]
+  let winddirectionHTML=document.getElementById('winddirection')
+  winddirectionHTML.textContent=winddirection+'°'
+
+ 
+
   plot(data)
 
 }
@@ -97,7 +161,6 @@ fetch(URL)
     .then(data => {
       const parser = new DOMParser();
       const xml = parser.parseFromString(data, "text/html");
-      console.log(xml);
       let contenedorMareas = xml.getElementsByTagName('div')[0];
       let contenedorHTML= document.getElementById('table-container');
       contenedorHTML.innerHTML=contenedorMareas.innerHTML
@@ -112,20 +175,21 @@ fetch(URL)
 
     let meteo = localStorage.getItem('meteo');
     if(meteo == null) {
-    let URL = 'https://api.open-meteo.com/v1/forecast?latitude=-2.14&longitude=-79.97&hourly=temperature_2m,precipitation_probability,rain,visibility&daily=temperature_2m_max,temperature_2m_min,uv_index_max&timezone=auto'
+    let URL ='https://api.open-meteo.com/v1/forecast?latitude=-2.20&longitude=-79.89&hourly=temperature_2m,relativehumidity_2m,precipitation_probability&daily=temperature_2m_max,temperature_2m_min,sunrise,sunset,uv_index_max,windspeed_10m_max,winddirection_10m_dominant&timezone=auto'
     
 
     fetch(URL)
     .then(response => response.json())
     .then(data => {
       load(data);
+      console.log(data);
       localStorage.setItem("meteo", JSON.stringify(data))
 
       
     })
     .catch(console.error);   
   } else {
-    load(JSON.parse(meteo))
+   load(JSON.parse(meteo))
   } 
   }
 )();
