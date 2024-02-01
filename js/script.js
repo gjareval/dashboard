@@ -173,8 +173,6 @@ fetch(URL)
   function () {
     loadInocar();
 
-    let meteo = localStorage.getItem('meteo');
-    if(meteo == null) {
     let URL ='https://api.open-meteo.com/v1/forecast?latitude=-2.20&longitude=-79.89&hourly=temperature_2m,relativehumidity_2m,precipitation_probability&daily=temperature_2m_max,temperature_2m_min,sunrise,sunset,uv_index_max,windspeed_10m_max,winddirection_10m_dominant&timezone=auto'
     
 
@@ -188,8 +186,5 @@ fetch(URL)
       
     })
     .catch(console.error);   
-  } else {
-   load(JSON.parse(meteo))
-  } 
   }
 )();
